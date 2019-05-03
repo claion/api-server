@@ -1,18 +1,19 @@
 import express from 'express';
 import morgan from 'morgan';
-import session from 'session';
+import session from 'express-session';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import flash from 'connect-flash';
+import passport from 'passport';
 
 require('dotenv').config();
 
 import indexRouter from './routers';
-import { sequelize } from './models';
+import db from './models';
 import passportConfig from './passport';
 
 const app = express();
-sequelize.sync();
+db.sequelize.sync();
 passportConfig(passport);
 
 app.set('port', process.env.PORT || 8002);
