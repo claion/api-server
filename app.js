@@ -4,13 +4,18 @@ import session from 'session';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import flash from 'connect-flash';
-import Router from './routers';
 
 require('dotenv').config();
 
+import indexRouter from './routers';
 import { sequelize } from './models';
+import passportConfig from './passport';
 
 const app = express();
+sequelize.sync();
+passportConfig(passport);
+
+app.set('port', process.env.PORT || 8002);
 
 const sessionMiddleware = session({
   secret: process.env.SECRET,
@@ -28,12 +33,28 @@ app.use(cookieParser());
 app.use(sessionMiddleware);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/uploads', express.static('uploads'));
 app.use('/static', express.static('static'));
 
-app.use('/', Router);
+app.use('/', indexRouter);
 
-const server = app.listen(process.env.PORT || 8888, () => {
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+app.use((err, req, res) => {
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+const server = app.listen(app.get('port'), () => {
   console.log('서버 레디');
 });
