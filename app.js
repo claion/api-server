@@ -9,6 +9,7 @@ import passport from 'passport';
 require('dotenv').config();
 
 import indexRouter from './routers';
+import apiRouter from './routers/v1';
 import db from './models';
 import passportConfig from './passport';
 
@@ -42,6 +43,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/static', express.static('static'));
 
 app.use('/', indexRouter);
+app.use('/v1', apiRouter);
 
 app.use((req, res, next) => {
   const err = new Error('Not Found');
